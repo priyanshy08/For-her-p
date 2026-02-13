@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Question ❤️</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #fff0f3;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            touch-action: none; /* Prevents accidental zooming while chasing button */
+        }
+
+        #tapHint {
+            position: fixed;
+            top: 20px;
+            color: #ff4d6d;
+            font-weight: bold;
+            animation: blink 1.5s infinite;
+            z-index: 100;
+        }
+
+        @keyframes blink { 50% { opacity: 0.1; } }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2.5rem;
+            width: 85%;
+            max-width: 400px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        #extraMessage {
+            color: #590d22;
+            font-size: 0.95rem;
+            font-style: italic;
+            margin-bottom: 15px;
+            min-height: 1.2rem;
+            transition: opacity 0.5s ease;
+            opacity: 0;
+            line-height: 1.3;
+        }
+
+        h1 { color: #ff4d6d; margin-bottom: 2rem; font-size: 1.5rem; }
+
+        .button-group {
+            display: flex;
+            flex-direction: row; 
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        button {
+            padding: 12px 0;
+            width: 120px; 
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 15;
+        }
+
+        #noBtn { 
+            background-color: #590d22; 
+            color: white; 
+            transition: all 0.15s ease-out;
+        }
+        
+        #yesBtn { background-color: #ff4d6d; color: white; }
+
+        .hidden { display: none !important; }
+
+        #successMessage { text-align: center; color: #ff4d6d; z-index: 20; padding: 20px; }
+        
+        #successMessage img { 
+            width: 220px; 
+            height: 220px; 
+            object-fit: cover; 
+            border-radius: 50%; 
+            border: 5px solid #ff4d6d; 
+            margin-bottom: 1.5rem; 
+        }
+
+        .heart { position: fixed; top: -10vh; font-size: 2rem; pointer-events: none; z-index: 1000; animation: fall linear forwards; }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+    </style>
+</head>
+<body onclick="unlockAudio()" ontouchstart="unlockAudio()">
+
+    <div id="tapHint">Tap anywhere to start ❤️</div>
+
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://files.catbox.moe/u6lna9.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container" id="mainContainer">
+        <div id="extraMessage">Think again peacefully while listening to this beautiful song... ✨</div>
+        <h1>Aradhita, will you be my Valentine? ❤️</h1>
+        <div class="button-group">
+            <button id="yesBtn">Yes!</button>
+            <button id="noBtn">No</button>
+        </div>
+    </div>
+
+    <div id="successMessage" class="hidden">
+        <img src="https://i.ibb.co/xcXKjfP/IMG-20260213-WA0072.jpg" alt="Us">
+        <h1>YAY! I knew it! Aap buri didi nhi, pari didi ho pari didi 🥰✨</h1>
+        <p style="font-size: 1.2rem;">Forever 🫶</p>
+    </div>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const mainContainer = document.getElementById('mainContainer');
+        const successMessage = document.getElementById('successMessage');
+        const extraMessage = document.getElementById('extraMessage');
+        const music = document.getElementById('bgMusic');
+        const tapHint = document.getElementById('tapHint');
+        
+        let musicStarted = false;
+        let noTapCount = 0; 
+
+        // Improved Audio Unlock
+        function unlockAudio() {
+            if (!musicStarted) {
+                music.play().then(() => {
+                    musicStarted = true;
+                    tapHint.classList.add('hidden');
+                }).catch(e => {
+                    console.log("Waiting for more definitive interaction...");
+                });
+            }
+        }
+
+        const handleNoInteraction = (e) => {
+            // First, try to play music
+            unlockAudio();
+            
+            // Prevent default only if we are jumping, to allow first tap to "count" as a gesture
+            if (noTapCount >= 1 && e.type === 'touchstart') e.preventDefault();
+
+            noTapCount++;
+
+            if (noTapCount === 1) {
+                extraMessage.style.opacity = "1";
+            } else {
+                const padding = 100;
+                const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+                const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+
+                const randomX = Math.max(20, Math.floor(Math.random() * maxX));
+                const randomY = Math.max(20, Math.floor(Math.random() * maxY));
+
+                noBtn.style.position = 'fixed';
+                noBtn.style.left = `${randomX}px`;
+                noBtn.style.top = `${randomY}px`;
+                noBtn.style.zIndex = "999";
+            }
+        };
+
+        // Attach events
+        noBtn.addEventListener('mouseover', handleNoInteraction);
+        noBtn.addEventListener('touchstart', handleNoInteraction);
+
+        yesBtn.addEventListener('click', () => {
+            unlockAudio();
+            mainContainer.classList.add('hidden');
+            successMessage.classList.remove('hidden');
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            createHeartRain();
+        });
+
+        function createHeartRain() {
+            for (let i = 0; i < 40; i++) {
+                const heart = document.createElement('div');
+                heart.classList.add('heart');
+                heart.innerText = ['❤️', '💖', '💝', '💕'][Math.floor(Math.random() * 4)];
+                heart.style.left = Math.random() * 100 + 'vw';
+                const duration = Math.random() * 3 + 2;
+                heart.style.animationDuration = duration + 's';
+                heart.style.animationDelay = Math.random() * 2 + 's';
+                document.body.appendChild(heart);
+                setTimeout(() => heart.remove(), (duration + 2) * 1000);
+            }
+        }
+    </script>
+</body>
+</html>
